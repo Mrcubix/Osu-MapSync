@@ -5,7 +5,7 @@ This is WIP
 
 Todo list:
 
-- Finish that serializer ffs
+- Finish that serializer for scores ffs
 - Repeat the same step for the collection
 - Add more sync methods
 - Cleanup
