@@ -10,7 +10,8 @@ Todo list:
 - Add more sync methods
 - Cleanup
 
-Credits:
+# Credits:
+I would like to thank:
 
 - [Tadeo](https://github.com/tadeokondrak) for making the code for the dumper and serializer and auhorizing me to use it in my project
 - [KirkSuD](https://github.com/KirkSuD) for making [osudb](https://github.com/KirkSuD/osudb) a parser for every db file
