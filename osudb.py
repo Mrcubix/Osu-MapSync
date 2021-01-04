@@ -35,7 +35,7 @@ def parse_type(fobj, data_type):
     Read needed bytes from fobj and parse it according to data_type.
     """
     if data_type == "Boolean": ## False if 0x00 else True
-        return bool(fobj.read(1))
+        return struct.unpack("<?", fobj.read(1))[0]
     elif data_type == "Byte": ## 1 byte int
         return fobj.read(1)[0]
     elif data_type == "DateTime": ## 8 bytes signed int
@@ -95,11 +95,6 @@ def parse_type(fobj, data_type):
 
 def parse_types(fobj, types):
     return [parse_type(fobj, i) for i in types]
-    """res = []
-    for i, j in enumerate(types):
-        #print("parse_types:", i, j)
-        res.append(parse_type(fobj, j))
-    return res"""
 
 ### Main Functions ###
 def parse_osu(file_path):
@@ -151,45 +146,4 @@ def parse_score(file_path):
     if left_data:
         raise AssertionError("parse_osu(file_path): file not empty after parsing!")
     return res
-
-if __name__ == "__main__":
-    osu_root_path = r"D:/Program Files (x86)/osu!"
-    output_json_path =r"./exported_json"
-
-    import time, json, os
-
-    pjoin = os.path.join ## shortcut
-
-    osu_root_path = os.path.expandvars(osu_root_path) ## https://stackoverflow.com/questions/53112401/percent-signs-in-windows-path
-    osu_db_path = pjoin(osu_root_path, "osu!.db")
-    collection_db_path = pjoin(osu_root_path, "collection.db")
-    scores_db_path = pjoin(osu_root_path, "scores.db")
-
-    output_json_path = os.path.abspath(os.path.realpath(output_json_path))
-    osu_json = pjoin(output_json_path, "osu!.json")
-    collection_json = pjoin(output_json_path, "collection.json")
-    scores_json = pjoin(output_json_path, "scores.json")
-
-    input("Press ENTER...")
-
-    st = time.time()
-    osu_data = parse_osu(osu_db_path)
-    print("Parsed osu!.db", time.time()-st)
-    print(osu_data[:6])
-    with open(osu_json, "w", encoding="utf-8") as wf:
-        json.dump(osu_data, wf, ensure_ascii=False, indent=2)
-
-    st = time.time()
-    collection_data = parse_collection(collection_db_path)
-    print("Parsed collection.db", time.time()-st)
-    print(collection_data[:2])
-    with open(collection_json, "w", encoding="utf-8") as wf:
-        json.dump(collection_data, wf, ensure_ascii=False, indent=2)
-
-    st = time.time()
-    scores_data = parse_score(scores_db_path)
-    print("Parsed scores.db", time.time()-st)
-    print(scores_data[:2])
-    with open(scores_json, "w", encoding="utf-8") as wf:
-        json.dump(scores_data, wf, ensure_ascii=False, indent=2)
 
