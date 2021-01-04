@@ -10,7 +10,7 @@ Todo list:
 
 # Usage:
 
-just open Sync.py > type Help or help or ? at the first prompt for avaialble commands
+just open Sync.py > type Help or help or ? at the first prompt for available commands
 
 # Credits:
 I would like to thank:
