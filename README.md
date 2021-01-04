@@ -1,7 +1,7 @@
 # Osu-MapSync
 A tool that will allow the sync of you BM, scores, replays and collection from a pc to another using different methods
 
-This should be working as of now, until a new osu! update change the formats
+A proper FTP implementation with further testing is required to ocntinue
 
 Todo list:
 
