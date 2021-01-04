@@ -1,4 +1,4 @@
-from ftplib import FTP
+from ftplib import FTP, error_perm
 import os
 import shutil
 from socket import gaierror
@@ -12,10 +12,23 @@ FTP_USER = 'admin'
 FTP_PASS = 'WideHard'
 FTP_PORT = 1024
 ftp = FTP()
+
+def Join(Folder):
+    while Folder != "":
+        try:
+            ftp.cwd(Folder)
+            return "Folder found"
+        except error_perm:
+            ftp.mkd(Folder)
+            ftp.cwd(Folder)
+            return  "A new folder has been created"
+
 Syncing = False
 Update = False
 Prompt = True
 while Prompt:
+    print(" ")
+    print("Commands availables:\n- Sync (or sync)\n- Update (or update)")
     print(" ")
     action = input("Run Command: ")
 
@@ -149,78 +162,44 @@ while Syncing:
 
     #---------------------------------------------------------------------------------------------------
 
-    dirlist = ftp.nlst()
-    osusyncing = True
-    while osusyncing:
-        osusyncpath = input("Enter osu!MapSync Path: ")
+    def Sync(path):
+        print(Join("osu!MapSync"))
+        print("Sending file to FTP server")
+        with open(path,"rb") as f:
+            ftp.storbinary(f"STOR {path}", f)
+        print("Upload done")
+        ftp.quit()
 
-        #
-        # storage/6133-3734/
-        #
-
-        try:
-            if any("osu!MapSync" in s for s in dirlist):
-                print("Info: found osu!MapSync")
-                cmd = 'adb connect ' + FTP_HOST + ':5555'
-                s = os.system(cmd)
-                cmd = 'adb -s ' + FTP_HOST + ':5555'' shell rm -f ' + osusyncpath + '/osu!MapSync/osu!MapSync.zip' 
-                print("Info: Removing Previous version of synchronized map Data")
-                s = os.system(cmd)
-                ftp.cwd("osu!MapSync")
-                print("Info: Uploading updated Map Data...")
-                osuDB = open(temppath,"rb")
-                ftp.storbinary("STOR osu!MapSync.zip", osuDB)
-                osuDB.close()
-
-                print("Success: Map Data uploaded")
-                osusyncing = False
-                Syncing = False
-
-            else:
-                print("Info: Creating a new folder")
-                cmd = 'adb connect ' + FTP_HOST + ':5555'
-                s = os.system(cmd)
-                cmd = 'adb -s ' + FTP_HOST + ':5555'' shell mkdir ' + osusyncpath + 'osu!MapSync'
-                print("Info: osu!MapSync folder created")
-                s = os.system(cmd)
-                cmd = 'adb connect ' + FTP_HOST + ':5555'
-                s = os.system(cmd)
-                cmd = 'adb -s ' + FTP_HOST + ':5555'' shell rm -f ' + osusyncpath + '/osu!MapSync/osu!MapSync.zip' 
-                print("Info: Removing Previous version of synchronized map Data")
-                s = os.system(cmd)
-                ftp.cwd("osu!MapSync")
-
-                osuDB = open(temppath,"rb")
-                ftp.storbinary("STOR osu!MapSync.zip", osuDB)
-                osuDB.close()
-
-                print("Success: Map Data uploaded")
-                osusyncing = False
-                Syncing = False
-        except NameError:
-            print("Error: Input isn't a path or the specified path is incorrect")
-
-    ftp.quit()
+    Sync("./osu!MapSync.zip")
 
     backup = True
     while backup:
         delete = input("Would you like to delete the backup of osu!MapSync (osu!MapSync.zip)(Containing most of you map data)? Y/n ")
-        if delete == "Y" or Yn == "y":
+        if delete == "Y" or delete == "y":
             shutil.copy('./osu!MapSync.zip', os.path.abspath(os.path.join(os.getcwd(),"./Backup")))
             backup = False
-        elif delete == "N" or Yn == "n":
+        elif delete == "N" or delete == "n":
             os.remove("osu!MapSync.zip")
             backup = False
         else:
             print("What the fuck is wrong with you?")
 
+    input("Sync Successful, press enter to quit")
+
+    Syncing = False
+
 while Update:
 
     ftp.cwd("osu!MapSync")
-    
-    print("Info: Downloading Updated map data...")
-    with open("./download osu!MapSync/osu!MapSync.zip","wb") as f:
-        ftp.retrbinary("RETR osu!MapSync.zip", f.write)
+
+    if ftp.dir() == None:
+        print("No synced data, exiting...")
+        ftp.quit()
+        exit()
+    else:
+        print("Info: Downloading Updated map data...")
+        with open("./download osu!MapSync/osu!MapSync.zip","wb") as f:
+            ftp.retrbinary("RETR osu!MapSync.zip", f.write)
 
     print("Info: Extracting content...")
 
@@ -324,6 +303,8 @@ while Update:
 
     serializer.serialize_scoredb_data(r'./new osu!.db/scores.db.txt')
 
+    print("Merging collection.db")
+
     def Merge_collection(base, update):
         files = [base, update]
         obj = {}
@@ -351,6 +332,9 @@ while Update:
     collection_output = Merge_collection("./old osu!.db/collection.db", "./old osu!.db/collection_update.db")
 
     serializer.serialize_collection_data(collection_output)
+
+    print("Prompting user about file")
+
     asking = True
     while asking:
         i = input("Would you like to send the updated files to your osu! folder directly?")
@@ -376,4 +360,5 @@ while Update:
             print("New files are located in './new osu!.db/'")
             asking = False
 
+    print("Collections, scores, recently played maps and replays have been Updated\nBeatmaps haven't been updated and will need to be downloaded manually for now\nuntil i implement a downloader")
     Update = False
