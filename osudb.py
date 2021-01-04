@@ -35,7 +35,7 @@ def parse_type(fobj, data_type):
     Read needed bytes from fobj and parse it according to data_type.
     """
     if data_type == "Boolean": ## False if 0x00 else True
-        return bool(fobj.read(1))
+        return struct.unpack("<?", fobj.read(1))[0]
     elif data_type == "Byte": ## 1 byte int
         return fobj.read(1)[0]
     elif data_type == "DateTime": ## 8 bytes signed int
@@ -93,84 +93,8 @@ def parse_type(fobj, data_type):
     else:
         raise NotImplementedError('parse_type(fobj, data_type): Unknown data type: "%s".' % data_type)
 
-def Serialize_type(fobj, data_type):
-    """
-    Read needed bytes from fobj and parse it according to data_type.
-    """
-    if data_type == "Boolean": ## False if 0x00 else True
-        return bool(fobj.read(1))
-    elif data_type == "Byte": ## 1 byte int
-        return fobj.read(1)[0]
-    elif data_type == "DateTime": ## 8 bytes signed int
-        return struct.pack("<q", fobj.read(8))[0]
-    elif data_type == "Double": ## 8 bytes floating point
-        return struct.pack("<d", fobj.read(8))[0]
-    elif data_type == "Int": ## 4 bytes unsigned int
-        return struct.pack("<I", fobj.read(4))[0]
-    elif data_type == "Int-Double pair": ## 0x08-Int-0x0d-Double with AssertionError
-        bb = fobj.read(1)[0]
-        if bb != 0x08:
-            raise AssertionError('parse_type(fobj, data_type): '
-                '1st byte(%s) of "Int-Double pair" != 0x08' % bb)
-        first_int = Serialize_type(fobj, "Int")
-        bb = fobj.read(1)[0]
-        if bb != 0x0d:
-            raise AssertionError('parse_type(fobj, data_type): '
-                '6th byte(%s) of "Int-Double pair" != 0x0d' % bb)
-        return [first_int, Serialize_type(fobj, "Double")]
-    elif data_type == "Int-Double pair*": ## int(n) - "Int-Double pair"*n
-        return [Serialize_type(fobj, "Int-Double pair") for i in range(Serialize_type(fobj, "Int"))]
-    elif data_type == "Long": ## 8 bytes unsigned int
-        return struct.pack("<Q", fobj.read(8))[0]
-    elif data_type == "Short": ## 2 bytes unsigned int
-        return struct.pack("<H", fobj.read(2))[0]
-    elif data_type == "Single": ## 4 bytes floating point
-        return struct.pack("<f", fobj.read(4))[0]
-    elif data_type == "String": ## 0x00 or 0x0b - ULE128(n) - UTF-8(length=n)
-        bb = fobj.read(1)[0]
-        if bb == 0x00:
-            return None
-        elif bb != 0x0b:
-            ## TODO: show integers in assertion error in hexadecimal and decimal
-            ##       to make debug more convenient (cause I may inspect the file in a byte reader.
-            raise AssertionError('parse_type(fobj, data_type): '
-                '1st byte(%s) of "String" not in {0x00, 0x0b}' % bb)
-        strlen = Serialize_type(fobj, "ULEB128")
-        return fobj.read(strlen).decode("utf-8")
-    elif data_type == "ULEB128": ## https://en.wikipedia.org/wiki/LEB128#Decode_unsigned_integer
-        i = 0 ## derived from the wiki psuedo code
-        res = 0
-        shift = 0
-        while True:
-            bb = fobj.read(1)[0]
-            i += 1
-            res |= ((bb & 0b1111111) << shift)
-            if (bb & 0b10000000) == 0:
-                break
-            shift += 7
-        return res
-    elif data_type == "Timing point": ## Double - Double - Boolean
-        return Serialize_type(fobj, ["Double", "Double", "Boolean"])
-    elif data_type == "Timing point+": ## int(n) - "Timing point"*n
-        return [Serialize_type(fobj, "Timing point") for i in range(Serialize_type(fobj, "Int"))]
-    else:
-        raise NotImplementedError('parse_type(fobj, data_type): Unknown data type: "%s".' % data_type)
-
-def Serialize_types(fobj, types):
-    return [Serialize_type(fobj, i) for i in types]
-    """res = []
-    for i, j in enumerate(types):
-        #print("parse_types:", i, j)
-        res.append(parse_type(fobj, j))
-    return res"""
-
 def parse_types(fobj, types):
     return [parse_type(fobj, i) for i in types]
-    """res = []
-    for i, j in enumerate(types):
-        #print("parse_types:", i, j)
-        res.append(parse_type(fobj, j))
-    return res"""
 
 ### Main Functions ###
 def parse_osu(file_path):
@@ -222,61 +146,4 @@ def parse_score(file_path):
     if left_data:
         raise AssertionError("parse_osu(file_path): file not empty after parsing!")
     return res
-
-def Serialize_score(file_path):
-    fobj = open(file_path, "rb")
-    res = Serialize_types(fobj, ['Int', 'Int'])
-    beatmaps_count = res[-1]
-    beatmaps = []
-    score_data_types = ['Byte', 'Int', 'String', 'String', 'String', 'Short', 'Short', 'Short', 'Short', 'Short', 'Short', 'Int', 'Short', 'Boolean', 'Int', 'String', 'Long', 'Int', 'Long']
-    for _ in range(beatmaps_count):
-        beatmaps.append(Serialize_types(fobj, ["String", "Int"]))
-        beatmaps[-1].append([Serialize_types(fobj, score_data_types) for _ in range(beatmaps[-1][1])])
-    res.append(beatmaps)
-    left_data = fobj.read(1)
-    fobj.close()
-    if left_data:
-        raise AssertionError("parse_osu(file_path): file not empty after parsing!")
-    return res
-
-if __name__ == "__main__":
-    osu_root_path = r"D:/Program Files (x86)/osu!"
-    output_json_path =r"./exported_json"
-
-    import time, json, os
-
-    pjoin = os.path.join ## shortcut
-
-    osu_root_path = os.path.expandvars(osu_root_path) ## https://stackoverflow.com/questions/53112401/percent-signs-in-windows-path
-    osu_db_path = pjoin(osu_root_path, "osu!.db")
-    collection_db_path = pjoin(osu_root_path, "collection.db")
-    scores_db_path = pjoin(osu_root_path, "scores.db")
-
-    output_json_path = os.path.abspath(os.path.realpath(output_json_path))
-    osu_json = pjoin(output_json_path, "osu!.json")
-    collection_json = pjoin(output_json_path, "collection.json")
-    scores_json = pjoin(output_json_path, "scores.json")
-
-    input("Press ENTER...")
-
-    st = time.time()
-    osu_data = parse_osu(osu_db_path)
-    print("Parsed osu!.db", time.time()-st)
-    print(osu_data[:6])
-    with open(osu_json, "w", encoding="utf-8") as wf:
-        json.dump(osu_data, wf, ensure_ascii=False, indent=2)
-
-    st = time.time()
-    collection_data = parse_collection(collection_db_path)
-    print("Parsed collection.db", time.time()-st)
-    print(collection_data[:2])
-    with open(collection_json, "w", encoding="utf-8") as wf:
-        json.dump(collection_data, wf, ensure_ascii=False, indent=2)
-
-    st = time.time()
-    scores_data = parse_score(scores_db_path)
-    print("Parsed scores.db", time.time()-st)
-    print(scores_data[:2])
-    with open(scores_json, "w", encoding="utf-8") as wf:
-        json.dump(scores_data, wf, ensure_ascii=False, indent=2)
 
