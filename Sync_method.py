@@ -131,15 +131,19 @@ def Upload_Method(method):
         print("Upload done")
         ftp.quit()
     if method == "SSH":
-        scp = IDlog("SSH")
-        path = input("Input folder's path where you want the data to be uploaded to: ")
-        scp.put("./osu!MapSync.zip", path+"/osu!MapSync.zip")
-        scp.close()
+        try:
+            scp = IDlog("SSH")
+            path = input("Input folder's path where you want the data to be uploaded to: ")
+            scp.put(os.path.abspath(__file__.split('Sync_method.py', 1)[0]+"/osu!MapSync.zip"), path+"/osu!MapSync.zip")
+            scp.close()
+            prompt = False
+        except:
+            print("path or folder not found or OS is pepega")
     if method == "localfile":
         path = input("Input folder's path where you want the data to be exported to: ")
         print(Join(path,"localfile",None))
         print("Sending file to",path)
-        shutil.copy("./osu!MapSync.zip", path+"\osu!MapSync.zip")
+        shutil.copy("./osu!MapSync.zip", os.path.abspath(path+"/osu!MapSync.zip"))
 
 
 def Update_Method(method):
@@ -162,7 +166,7 @@ def Update_Method(method):
             try:
                 print("Receiving files from",path)
                 print(__file__)
-                shutil.copy(path+"\osu!MapSync.zip", __file__.split('Sync_method.py', 1)[0]+"\download osu!MapSync\osu!MapSync.zip")
+                shutil.copy(os.path.abspath(path+"/osu!MapSync.zip"), os.path.abspath(__file__.split('Sync_method.py', 1)[0]+"/download osu!MapSync/osu!MapSync.zip"))
                 prompt = False
             except:
                 print("path or folder not found or OS is pepega")
@@ -173,7 +177,7 @@ def Update_Method(method):
             path = input("Input folder's path where you want the data to be downloaded from: ")
             try:
                 print("Info: Downloading Updated map data...")
-                scp.get(path+"/osu!MapSync.zip", __file__.split('Sync_method.py', 1)[0]+"\download osu!MapSync\osu!MapSync.zip")
+                scp.get(path+"/osu!MapSync.zip", os.path.abspath(__file__.split('Sync_method.py', 1)[0]+"/download osu!MapSync/osu!MapSync.zip"))
                 prompt = False
                 scp.close()
             except:
@@ -186,6 +190,7 @@ def Update():
         method = input("Choose a method from the list: ")
         try:
             Update_Method(method)
+            print("Done")
             prompt = False
         except:
             print("Method not available")
@@ -197,6 +202,7 @@ def Upload():
         method = input("Choose a method from the list: ")
         try:
             Upload_Method(method)
+            print("Done")
             prompt = False
         except:
             print("Method not available")

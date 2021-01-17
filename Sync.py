@@ -52,16 +52,17 @@ while osupathcheck:
     except NameError:
         print("Error: Input isn't a path or the specified path is incorrect")
 
+collectionDB = os.path.abspath(osupath + '/collection.db')
+scoresDB = os.path.abspath(osupath + '/scores.db')
+osuDBm = os.path.abspath(osupath + '/osu!.db')
+replays = os.path.abspath(osupath + '/Data')
+songpath = os.path.abspath(osupath + "/Songs")
+
 while Syncing:
 
     #---------------------------------------------------------------------------------------------------
     # Backup needed file to osu!MapSync
-
-    collectionDB = osupath + '\\' + 'collection.db'
-    scoresDB = osupath + '\\' + 'scores.db'
-    osuDBm = osupath + '\\' + 'osu!.db'
-    replays = osupath + '\\' + 'Data'
-    songpath = osupath + "\\Songs"
+    #---------------------------------------------------------------------------------------------------
 
     # Write all maps link to a txt file
 
@@ -105,7 +106,7 @@ while Syncing:
     shutil.copy(scoresDB, os.path.abspath(os.path.join(os.getcwd(),"./osu!MapSync")))
     shutil.copy('./r.zip', os.path.abspath(os.path.join(os.getcwd(),"./osu!MapSync")))
     os.remove("r.zip")
-    shutil.copy(osuDBm, os.path.abspath(os.path.join(os.getcwd(),"../osu!MapSync")))
+    shutil.copy(osuDBm, os.path.abspath(os.path.join(os.getcwd(),"./osu!MapSync")))
     shutil.copy('./Songs.txt', os.path.abspath(os.path.join(os.getcwd(),"./osu!MapSync")))
     os.remove("Songs.txt")
 
@@ -120,6 +121,7 @@ while Syncing:
     #
 
     import Sync_method as Sm
+    print("test")
     Sm.Upload()
 
     backup = True
@@ -142,7 +144,7 @@ while Update:
 
     import Sync_method as Sm
     Sm.Update()
-
+    
     print("Info: Extracting content...")
 
     shutil.unpack_archive("./download osu!MapSync/osu!MapSync.zip", "./download osu!MapSync/")
@@ -157,7 +159,7 @@ while Update:
 
     cmd = 'bad.exe dump "./old osu!.db/osu!_update.db" "./old osu!.db/osu!_update.csv"'
     s = os.system(cmd)
-    cmd = 'bad.exe patch "./old osu!.db/osu!.db" "./old osu!.db/osu!_update.csv" "/new osu!.db/osu!.db"'
+    cmd = 'bad.exe patch "./old osu!.db/osu!.db" "./old osu!.db/osu!_update.csv" "./new osu!.db/osu!.db"'
     s = os.system(cmd)
 
     print("Merging scores.db")
@@ -279,21 +281,21 @@ while Update:
 
     asking = True
     while asking:
-        i = input("Would you like to send the updated files to your osu! folder directly?")
+        i = input("Would you like to send the updated files to your osu! folder directly? Y/n ")
         if i == "Yes" or i == "Y" or i == "yes" or i == "y":
-            i = input("Would you like to backup your old osu! db files? (they will be located in",osupath,")","(recommended)") #send files to osu! folder
+            i = input("Would you like to backup your old osu! db files? (they will be located in "+os.path.abspath(osupath+"/Backup")+") (recommended) Y/n ") #send files to osu! folder
             if i == "Yes" or i == "Y" or i == "yes" or i == "y":
-                shutil.copy(collectionDB, os.path.abspath(os.path.join(os.getcwd(),osupath+"\\Backup\\collection.db")))
-                shutil.copy(scoresDB, os.path.abspath(os.path.join(os.getcwd(),osupath+"\\Backup\\scores.db")))
-                shutil.copy(osuDBm, os.path.abspath(os.path.join(os.getcwd(),osupath+"\\Backup\\osu!.db")))
+                shutil.copy(collectionDB, os.path.abspath(os.path.join(os.getcwd(),osupath+"/Backup/collection.db")))
+                shutil.copy(scoresDB, os.path.abspath(os.path.join(os.getcwd(),osupath+"/Backup/scores.db")))
+                shutil.copy(osuDBm, os.path.abspath(os.path.join(os.getcwd(),osupath+"/Backup/osu!.db")))
 
-                shutil.unpack_archive("./download osu!MapSync/r.zip", osupath + "\\data\\r\\")
+                shutil.unpack_archive("./download osu!MapSync/r.zip", osupath + "/data/r/")
                 shutil.copy("./new osu!.db/osu!.db", os.path.abspath(os.path.join(os.getcwd(),osuDBm)))
                 shutil.copy("./new osu!.db/scores.db", os.path.abspath(os.path.join(os.getcwd(),scoresDB)))
                 shutil.copy("./new osu!.db/osu!.db", os.path.abspath(os.path.join(os.getcwd(),collectionDB)))
                 asking = False
             if i == "No" or i == "N" or i == "no" or i == "n":
-                shutil.unpack_archive("./download osu!MapSync/r.zip", osupath + "\\data\\r\\")
+                shutil.unpack_archive("./download osu!MapSync/r.zip", os.path.abspath(osupath + "/data/r/"))
                 shutil.copy("./new osu!.db/osu!.db", os.path.abspath(os.path.join(os.getcwd(),osuDBm)))
                 shutil.copy("./new osu!.db/scores.db", os.path.abspath(os.path.join(os.getcwd(),scoresDB)))
                 shutil.copy("./new osu!.db/osu!.db", os.path.abspath(os.path.join(os.getcwd(),collectionDB)))
