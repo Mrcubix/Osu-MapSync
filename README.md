@@ -3,7 +3,8 @@ A tool that will allow the sync of you BM, scores, replays and collection from a
 
 Testing is the only thing left to be done
 
-Right now this tool only support Windows
+Right now this tool support Windows
+Linux and MacOS hasn't been tested yet
 
 Todo list:
 
