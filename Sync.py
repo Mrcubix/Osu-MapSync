@@ -1,4 +1,3 @@
-from ftplib import FTP, error_perm
 import os
 import shutil
 from socket import gaierror
@@ -6,22 +5,6 @@ import re
 import osudb
 import ast
 import serializer
-
-FTP_HOST = '192.168.43.1'
-FTP_USER = 'admin'
-FTP_PASS = 'WideHard'
-FTP_PORT = 1024
-ftp = FTP()
-
-def Join(Folder):
-    while Folder != "":
-        try:
-            ftp.cwd(Folder)
-            return "Folder found"
-        except error_perm:
-            ftp.mkd(Folder)
-            ftp.cwd(Folder)
-            return  "A new folder has been created"
 
 Syncing = False
 Update = False
@@ -49,37 +32,7 @@ while Prompt:
     else:
         print(action,"isn't a valid command")
 
-
 print(" ")
-# connect to the FTP server
-connecting = True
-inputpip = True
-while connecting:
-    
-    while inputpip:
-        FTP_HOST = input("Enter your FTP server IP here: ")
-        FTP_PORT = input("Enter your FTP serveur Port here: ")
-        try:
-            FTP_PORT = int(FTP_PORT)
-            inputpip = False
-        except NameError:
-            print("Error: input isn't a port")
-        except ValueError:
-            print("Error: input isn't a port")
-
-    try:
-        connect = ftp.connect(FTP_HOST,FTP_PORT)
-        if connect == '220 Service ready for new user.':
-            ftp.login(FTP_USER,FTP_PASS)
-            print("FTP: Connected as " + FTP_USER)
-            connecting = False
-        else:
-            print("Error: URL isn't associated with an FTP server")
-    except gaierror:
-        print("Error: URL is somehow invalid or isn't an URL at all")
-    except TimeoutError:
-        print("Error: Connection timed out due to wrong Port or IP")
-        inputpip = True
 
 # local file name you want to upload
 path = os.path.abspath(os.path.join(os.getcwd(),"./new osu!.db"))
@@ -162,15 +115,12 @@ while Syncing:
 
     #---------------------------------------------------------------------------------------------------
 
-    def Sync(path):
-        print(Join("osu!MapSync"))
-        print("Sending file to FTP server")
-        with open(path,"rb") as f:
-            ftp.storbinary(f"STOR {path}", f)
-        print("Upload done")
-        ftp.quit()
+    #
+    # TBA: Dropbox support
+    #
 
-    Sync("./osu!MapSync.zip")
+    import Sync_method as Sm
+    Sm.Upload()
 
     backup = True
     while backup:
@@ -190,16 +140,8 @@ while Syncing:
 
 while Update:
 
-    ftp.cwd("osu!MapSync")
-
-    if ftp.dir() == None:
-        print("No synced data, exiting...")
-        ftp.quit()
-        exit()
-    else:
-        print("Info: Downloading Updated map data...")
-        with open("./download osu!MapSync/osu!MapSync.zip","wb") as f:
-            ftp.retrbinary("RETR osu!MapSync.zip", f.write)
+    import Sync_method as Sm
+    Sm.Update()
 
     print("Info: Extracting content...")
 
