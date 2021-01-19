@@ -47,28 +47,26 @@ def serialize_types_exp(fobj, types):
 
 score_data_types = ['Byte', 'Int', 'String', 'String', 'String', 'Short', 'Short', 'Short', 'Short', 'Short', 'Short', 'Int', 'Short', 'Boolean', 'Int', 'String', 'Long', 'Int', 'Long']
 
-def serialize_scoredb_data(file_path):
-    with open(file_path, "r") as fobj:
-        with open("./new osu!.db/scores.db", "wb") as otp:
-            otp.truncate(0)
-            for i in fobj:
-                fobj = ast.literal_eval(i)
+def serialize_scoredb_data(list):
+    fobj = list
+    with open("./new osu!.db/scores.db", "wb") as otp:
+        otp.truncate(0)
+        for i in range(2):
+            otp.write((serialize_type_exp(fobj[i],'Int')))
+        for maps in fobj[2]:
             for i in range(2):
-                otp.write((serialize_type_exp(fobj[i],'Int')))
-            for maps in fobj[2]:
-                for i in range(2):
-                    if type(maps[i]) == str:
-                        otp.write(serialize_type_exp(maps[i],'String'))
-                    if type(maps[i]) == int:
-                        otp.write(serialize_type_exp(maps[i],'Int'))
-                for scores in maps[2]:
-                    for idx, stats in enumerate(scores): 
-                        if score_data_types[idx] == 'Byte':
-                            otp.write(serialize_type_exp(bytes(stats), score_data_types[idx]))
-                        elif stats == None:
-                            otp.write(b'\x00')
-                        else:    
-                            otp.write(serialize_type_exp(stats, score_data_types[idx]))
+                if type(maps[i]) == str:
+                    otp.write(serialize_type_exp(maps[i],'String'))
+                if type(maps[i]) == int:
+                    otp.write(serialize_type_exp(maps[i],'Int'))
+            for scores in maps[2]:
+                for idx, stats in enumerate(scores): 
+                    if score_data_types[idx] == 'Byte':
+                        otp.write(serialize_type_exp(bytes(stats), score_data_types[idx]))
+                    elif stats == None:
+                           otp.write(b'\x00')
+                    else:    
+                        otp.write(serialize_type_exp(stats, score_data_types[idx]))
 
 def serialize_collection_data(list):
     with open("./new osu!.db/collection.db", "wb") as otp:

@@ -164,88 +164,32 @@ while Update:
 
     print("Merging scores.db")
 
-    parse = osudb.parse_score(r"./old osu!.db/scores.db")
-    with open('./old osu!.db/scoresdb.txt', 'w') as f:
-        for item in parse:
-            print(type(item))
-            f.write("%s\n" % item)
+    def Merge_scores(base, update):
+        scDB_Base = osudb.parse_score(base)
+        scDB_Update = osudb.parse_score(update)
+        for map_u in scDB_Update[2]:
+            Found_m = False
+            for map_b in scDB_Base[2]:
+                if map_u[0] == map_b[0]:
+                    Found_m = True
+                    for score_u in map_u[2]:
+                        Found_s = False
+                        for score_b in map_b[2]:
+                            if score_u[4] == score_b[4]:
+                                Found_s = True
+                                break
+                        if not Found_s:
+                            scDB_Base[2][scDB_Base[2].index(map_b)][2].append(score_u)
+                            scDB_Base[2][scDB_Base[2].index(map_b)][1] += 1
+                            print("Added: "+score_u+" Type: Score")
+            if not Found_m:
+                scDB_Base[2].append(map_u)
+                scDB_Base[1] += 1
+                print("Added: "+map_u+" Type: Map")
+        scDB_Base[0] = scDB_Update[0]
+        return scDB_Base
 
-    parse = osudb.parse_score(r"./old osu!.db/scores_update.db")
-    with open('./old osu!.db/scoresdb_update.txt', 'w') as f:
-        for item in parse:
-            f.write("%s\n" % item)
-    parsed_files = ["./old osu!.db/scoresdb.txt", "./old osu!.db/scoresdb_update.txt"]
-
-
-    scores_DB_list = []
-    scores_DB_list_update = []
-    scoreslistname = [scores_DB_list,scores_DB_list_update]
-
-    def organization(original_txt_name, listname):
-        with open(original_txt_name, 'r') as files:
-            for i, line in enumerate(files):
-                if i==2:
-                    BSlist = ast.literal_eval(line)
-                    for Map_list_scoresDB in BSlist:    
-                        listname.append(Map_list_scoresDB)
-                                
-        return ""
-
-    for index_parsed, score_list in zip(parsed_files, scoreslistname):
-        task = organization(index_parsed, score_list)
-
-
-    maplist_DB_list = []
-    map_DB_update_list = []
-    BM_md5_hash = []
-    BM_md5_hash_update = []
-
-
-    for maplist_scores_DB_list_update in scores_DB_list_update:
-
-        map_DB_update_list.append(maplist_scores_DB_list_update)
-
-        for index, hash in enumerate(maplist_scores_DB_list_update):
-            BM_md5_hash.append(hash)
-
-
-    for maplist_scores_DB_list in scores_DB_list:
-
-        maplist_DB_list.append(maplist_scores_DB_list)
-
-        for index, hash in enumerate(maplist_scores_DB_list):
-            BM_md5_hash_update.append(hash)
-
-    with open("./old osu!.db/scoresdb_update.txt", 'r') as f:
-        for i, line in enumerate(f):
-            if i==0:
-                scoreversion = line
-                break
-    try:
-        for map, hash in enumerate(BM_md5_hash_update):
-            if map >= len(maplist_DB_list):
-                break
-            else:
-                if hash in BM_md5_hash:
-                    for scores in range(len(map_DB_update_list[map][2])):
-                        if map_DB_update_list[map][2][scores][4] in maplist_DB_list[map][2][scores][4]:
-                            print(map, scores, "match")
-                        else:
-                            maplist_DB_list[map][2].append(map_DB_update_list[map][2][scores])
-                            print(hash, ": score added")
-                            maplist_DB_list[map][1] = maplist_DB_list[map][1] + 1
-                else:
-                    maplist_DB_list.append(map_DB_update_list[map])
-                    print("map added")
-    except IndexError:
-        print("Update file might be outdated or something else happened")
-
-
-    newscoredb = [int(scoreversion), len(maplist_DB_list), (maplist_DB_list)]
-    with open(r'./new osu!.db/scores.db.txt', 'w') as output:
-        output.write(str(newscoredb))
-
-    serializer.serialize_scoredb_data(r'./new osu!.db/scores.db.txt')
+    serializer.serialize_scoredb_data(Merge_scores("./old osu!.db/scores.db","./old osu!.db/scores_update.db"))
 
     print("Merging collection.db")
 
@@ -289,13 +233,17 @@ while Update:
                 shutil.copy(scoresDB, os.path.abspath(os.path.join(os.getcwd(),osupath+"/Backup/scores.db")))
                 shutil.copy(osuDBm, os.path.abspath(os.path.join(os.getcwd(),osupath+"/Backup/osu!.db")))
 
+                print("Extracting replays...")
                 shutil.unpack_archive("./download osu!MapSync/r.zip", osupath + "/data/r/")
+                print("Moving DB files...")
                 shutil.copy("./new osu!.db/osu!.db", os.path.abspath(os.path.join(os.getcwd(),osuDBm)))
                 shutil.copy("./new osu!.db/scores.db", os.path.abspath(os.path.join(os.getcwd(),scoresDB)))
                 shutil.copy("./new osu!.db/osu!.db", os.path.abspath(os.path.join(os.getcwd(),collectionDB)))
                 asking = False
             if i == "No" or i == "N" or i == "no" or i == "n":
+                print("Extracting replays...")
                 shutil.unpack_archive("./download osu!MapSync/r.zip", os.path.abspath(osupath + "/data/r/"))
+                print("Moving DB files...")
                 shutil.copy("./new osu!.db/osu!.db", os.path.abspath(os.path.join(os.getcwd(),osuDBm)))
                 shutil.copy("./new osu!.db/scores.db", os.path.abspath(os.path.join(os.getcwd(),scoresDB)))
                 shutil.copy("./new osu!.db/osu!.db", os.path.abspath(os.path.join(os.getcwd(),collectionDB)))
