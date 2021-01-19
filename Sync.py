@@ -121,7 +121,6 @@ while Syncing:
     #
 
     import Sync_method as Sm
-    print("test")
     Sm.Upload()
 
     backup = True
@@ -133,8 +132,6 @@ while Syncing:
         elif delete == "N" or delete == "n":
             os.remove("osu!MapSync.zip")
             backup = False
-        else:
-            print("What the fuck is wrong with you?")
 
     input("Sync Successful, press enter to quit")
 
@@ -167,9 +164,9 @@ while Update:
     def Merge_scores(base, update):
         scDB_Base = osudb.parse_score(base)
         scDB_Update = osudb.parse_score(update)
-        for map_u in scDB_Update[2]:
+        for map_u in scDB_Update[2]: #  [int,int,[Maps]]
             if map_u in scDB_Base[2]:
-                    for score_u in map_u[2]:
+                    for score_u in map_u[2]:    #   [int, int,[scores]]
                         if score_u in scDB_Base[2][scDB_Base[2].index(map_u)][2]:
                             continue
                         else:
@@ -212,7 +209,6 @@ while Update:
         return obj["collection0"]
 
     collection_output = Merge_collection("./old osu!.db/collection.db", "./old osu!.db/collection_update.db")
-
     serializer.serialize_collection_data(collection_output)
 
     print("Prompting user about file")
@@ -226,25 +222,18 @@ while Update:
                 shutil.copy(collectionDB, os.path.abspath(os.path.join(os.getcwd(),osupath+"/Backup/collection.db")))
                 shutil.copy(scoresDB, os.path.abspath(os.path.join(os.getcwd(),osupath+"/Backup/scores.db")))
                 shutil.copy(osuDBm, os.path.abspath(os.path.join(os.getcwd(),osupath+"/Backup/osu!.db")))
-
-                print("Extracting replays...")
-                shutil.unpack_archive("./download osu!MapSync/r.zip", osupath + "/data/r/")
-                print("Moving DB files...")
-                shutil.copy("./new osu!.db/osu!.db", os.path.abspath(os.path.join(os.getcwd(),osuDBm)))
-                shutil.copy("./new osu!.db/scores.db", os.path.abspath(os.path.join(os.getcwd(),scoresDB)))
-                shutil.copy("./new osu!.db/osu!.db", os.path.abspath(os.path.join(os.getcwd(),collectionDB)))
-                asking = False
-            if i == "No" or i == "N" or i == "no" or i == "n":
+            if i == "No" or i == "N" or i == "no" or i == "n" or i == "Yes" or i == "Y" or i == "yes" or i == "y":
                 print("Extracting replays...")
                 shutil.unpack_archive("./download osu!MapSync/r.zip", os.path.abspath(osupath + "/data/r/"))
                 print("Moving DB files...")
                 shutil.copy("./new osu!.db/osu!.db", os.path.abspath(os.path.join(os.getcwd(),osuDBm)))
                 shutil.copy("./new osu!.db/scores.db", os.path.abspath(os.path.join(os.getcwd(),scoresDB)))
-                shutil.copy("./new osu!.db/osu!.db", os.path.abspath(os.path.join(os.getcwd(),collectionDB)))
+                shutil.copy("./new osu!.db/collection.db", os.path.abspath(os.path.join(os.getcwd(),collectionDB)))
                 asking = False
         if i == "No" or i == "N" or i == "no" or i == "n":
             print("New files are located in './new osu!.db/'")
             asking = False
 
     print("Collections, scores, recently played maps and replays have been Updated\nBeatmaps haven't been updated and will need to be downloaded manually for now\nuntil i implement a downloader")
+    print("Maps link list in ./download osu!MapSync/Songs.txt")
     Update = False
