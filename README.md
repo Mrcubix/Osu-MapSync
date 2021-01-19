@@ -3,7 +3,7 @@ A tool that will allow the sync of you BM, scores, replays and collection from a
 
 Testing is the only thing left to be done
 
-Right now this tool support Windows
+Right now this tool support Windows  
 Linux and MacOS hasn't been tested yet
 
 Todo list:
@@ -13,7 +13,8 @@ Todo list:
 
 # Usage:
 
-just open `Sync.py` > `help` for a list of commands
+Download and install python 3.6+
+Open `Sync.py` > `help` for a list of commands
 
 - Sync: Upload your data to a remote of local server of your choice for update on another machine
 - Update: Update your local files with data from a local or remote server
