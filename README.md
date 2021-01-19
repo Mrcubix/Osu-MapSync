@@ -11,6 +11,12 @@ Todo list:
 - Add more sync methods
 - Cleanup
 
+#Supported Sync method
+
+- FTP
+- SSH
+- localfile
+
 # Usage:
 
 Download and install python 3.6+

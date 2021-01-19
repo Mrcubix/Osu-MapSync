@@ -168,21 +168,15 @@ while Update:
         scDB_Base = osudb.parse_score(base)
         scDB_Update = osudb.parse_score(update)
         for map_u in scDB_Update[2]:
-            Found_m = False
-            for map_b in scDB_Base[2]:
-                if map_u[0] == map_b[0]:
-                    Found_m = True
+            if map_u in scDB_Base[2]:
                     for score_u in map_u[2]:
-                        Found_s = False
-                        for score_b in map_b[2]:
-                            if score_u[4] == score_b[4]:
-                                Found_s = True
-                                break
-                        if not Found_s:
-                            scDB_Base[2][scDB_Base[2].index(map_b)][2].append(score_u)
-                            scDB_Base[2][scDB_Base[2].index(map_b)][1] += 1
+                        if score_u in scDB_Base[2][scDB_Base[2].index(map_u)][2]:
+                            continue
+                        else:
+                            scDB_Base[2][scDB_Base[2].index(map_u)][2].append(score_u)
+                            scDB_Base[2][scDB_Base[2].index(map_u)][1] += 1
                             print("Added: "+score_u+" Type: Score")
-            if not Found_m:
+            else:
                 scDB_Base[2].append(map_u)
                 scDB_Base[1] += 1
                 print("Added: "+map_u+" Type: Map")
