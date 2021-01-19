@@ -11,7 +11,7 @@ Todo list:
 - Add more sync methods
 - Cleanup
 
-#Supported Sync method
+# Supported Sync method
 
 - FTP
 - SSH
