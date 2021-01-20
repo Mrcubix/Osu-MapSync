@@ -1,10 +1,10 @@
 import os
 import shutil
-from socket import gaierror
 import re
 import osudb
-import ast
 import serializer
+import subprocess
+import sys
 
 Syncing = False
 Update = False
@@ -41,9 +41,9 @@ temppath = os.path.abspath(os.path.join(os.getcwd(),"./osu!MapSync.zip"))
 osupathcheck = True
 while osupathcheck:
     osupath = input("enter osu path here: ")
-    print(osupath + '\\' + "osu!.exe")
+    print(os.path.abspath(osupath + '/osu!.exe'))
     try:
-        if os.path.isfile(osupath + '\\' + "osu!.exe"):
+        if os.path.isfile(os.path.abspath(osupath + '/osu!.exe')):
             print("Success: folder contain osu.exe")
             osupathcheck = False
         else:
@@ -58,6 +58,17 @@ osuDBm = os.path.abspath(osupath + '/osu!.db')
 replays = os.path.abspath(osupath + '/Data')
 songpath = os.path.abspath(osupath + "/Songs")
 
+def Song_ID():
+    BMID_list = []
+    MP_list = os.listdir(songpath)
+    for ID in MP_list:
+        BMID_list.append(re.match(r"(^\d*)",ID).group(0))
+    for idx, ID in enumerate(BMID_list):
+        if ID == "  " or ID == " " or ID == "":
+            print("removed:", idx, "=", '"'+ID+'"', "from the list since it's not a valid ID" )
+            BMID_list.remove(ID)
+    return BMID_list
+
 while Syncing:
 
     #---------------------------------------------------------------------------------------------------
@@ -66,26 +77,7 @@ while Syncing:
 
     # Write all maps link to a txt file
 
-    BMID_list = []
-    MP_list = os.listdir(songpath)
-
-    for ID in MP_list:
-        match = re.match(r"(^\d*)",ID)
-        BMID_list.append(match.group(0))
-
-    cleaning = True
-    e = 0
-    while cleaning:
-        try:
-            for idx in range(len(BMID_list)):
-                i = idx
-                BMID_list[idx] = int(BMID_list[idx]) #converting them to int, if not an int, then it get removed
-                BMID_list[idx] = str(BMID_list[idx]) #converting back to str when done cleaning
-            cleaning = False
-        except:
-            print("removed: ",i+e," = ",'"',BMID_list[i],'"', "from the list since it's not a valid ID")
-            BMID_list.remove(BMID_list[i])
-            e += 1
+    BMID_list = Song_ID()
 
     print (" ")
 
@@ -211,6 +203,67 @@ while Update:
     collection_output = Merge_collection("./old osu!.db/collection.db", "./old osu!.db/collection_update.db")
     serializer.serialize_collection_data(collection_output)
 
+    print("Prompting user about unsynced maps...")
+
+    def Download_Map(old_songs):  
+        print("importing modules...")
+        try: 
+            import browser_cookie3
+            import requests
+            print("successfully imported browser_cookie3 and requests")
+        except ImportError:
+            promptm = True
+            while promptm:
+                i = input("browser_cookie3 and requests are required to download maps from this program, would you like to install these packages? (Require pip) Y/n: ")
+                if i == "Y" or i == "y":
+                    subprocess.call([sys.executable, "-m", "pip", "install", "browser_cookie3"])
+                    subprocess.call([sys.executable, "-m", "pip", "install", "requests"])
+                    import browser_cookie3
+                    import requests
+                    print("successfully imported browser_cookie3 and requests")
+                    promptm = False
+                if i == "N" or i == "n":
+                    print("exiting...")
+                    exit()
+
+        BMID_list = Song_ID()
+        for id in BMID_list:
+            BMID_list[BMID_list.index(id)] = "https://osu.ppy.sh/beatmapsets/"+id+"\n"
+
+        cj = browser_cookie3.chrome()
+        print("Comparing map in osu!/Songs VS updated data")
+        with open(old_songs, "r") as f:
+            with open("./download osu!mapSync/NewSongs.txt", "w") as otp:
+                for link in f.readlines():
+                    if link not in BMID_list:
+                        otp.write(link)
+
+        os.remove(old_songs)
+
+        with open("./download osu!mapSync/NewSongs.txt", "r") as f:
+            for link in f:            
+                print("Downloading", link.strip("\n"))
+                headers = {"referer": link.strip("\n")}
+                with requests.get(link.strip("\n")+"/download", stream=True, cookies=cj, headers=headers) as r:
+                    if r.status_code == 200:
+                        try:
+                            id = re.sub("[^0-9]", "", link)
+                            with open(os.path.abspath(osupath+"/Songs/"+id+".osz"), "wb") as otp:
+                                otp.write(r.content)
+                        except:
+                            print("You either aren't connected on osu!'s website or you're limited by the API, in which case you now have to wait 1h and then try again.")
+
+    asking = True
+    while asking:
+        i = input("Would you like to download unsynced map now? Y/n ")
+        if i == "Yes" or i == "yes" or i == "Y" or i == "y":
+            print("Downloading unsynced maps now...")
+            Download_Map("./download osu!mapSync/Songs.txt")
+            asking = False
+        if i == "No" or i == "no" or i == "N" or i == "n":
+            print("Unsorted map links list in ./download osu!MapSync/Songs.txt")
+            asking = False
+        
     print("Prompting user about file")
 
     asking = True
@@ -234,6 +287,5 @@ while Update:
             print("New files are located in './new osu!.db/'")
             asking = False
 
-    print("Collections, scores, recently played maps and replays have been Updated\nBeatmaps haven't been updated and will need to be downloaded manually for now\nuntil i implement a downloader")
-    print("Maps link list in ./download osu!MapSync/Songs.txt")
+    print("Collections, scores, recently played maps and replays have been Updated.\nMaps may have been updated or not depending on user's choice")
     Update = False
