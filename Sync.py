@@ -210,17 +210,20 @@ while Update:
         try: 
             import browser_cookie3
             import requests
-            print("successfully imported browser_cookie3 and requests")
+            from bs4 import BeautifulSoup as BS
+            print("successfully imported browser_cookie3, requests and bs4")
         except ImportError:
             promptm = True
             while promptm:
-                i = input("browser_cookie3 and requests are required to download maps from this program, would you like to install these packages? (Require pip) Y/n: ")
+                i = input("browser_cookie3, requests and bs4 are required to download maps from this program, would you like to install these packages? (Require pip) Y/n: ")
                 if i == "Y" or i == "y":
                     subprocess.call([sys.executable, "-m", "pip", "install", "browser_cookie3"])
                     subprocess.call([sys.executable, "-m", "pip", "install", "requests"])
+                    subprocess.call([sys.executable, "-m", "pip", "install", "bs4"])
                     import browser_cookie3
                     import requests
-                    print("successfully imported browser_cookie3 and requests")
+                    from bs4 import BeautifulSoup as BS
+                    print("successfully imported browser_cookie3, requests and bs4")
                     promptm = False
                 if i == "N" or i == "n":
                     print("exiting...")
@@ -244,11 +247,13 @@ while Update:
             for link in f:            
                 print("Downloading", link.strip("\n"))
                 headers = {"referer": link.strip("\n")}
+                with requests.get(link.strip("\n")) as r:
+                    t = BS(r.text, 'html.parser').title.text.split("·")[0]
                 with requests.get(link.strip("\n")+"/download", stream=True, cookies=cj, headers=headers) as r:
                     if r.status_code == 200:
                         try:
                             id = re.sub("[^0-9]", "", link)
-                            with open(os.path.abspath(osupath+"/Songs/"+id+".osz"), "wb") as otp:
+                            with open(os.path.abspath(osupath+"/Songs/"+id+" "+t+".osz"), "wb") as otp:
                                 otp.write(r.content)
                         except:
                             print("You either aren't connected on osu!'s website or you're limited by the API, in which case you now have to wait 1h and then try again.")
