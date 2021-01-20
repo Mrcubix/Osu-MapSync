@@ -230,7 +230,7 @@ while Update:
         for id in BMID_list:
             BMID_list[BMID_list.index(id)] = "https://osu.ppy.sh/beatmapsets/"+id+"\n"
 
-        cj = browser_cookie3.chrome()
+        cj = browser_cookie3.load()
         print("Comparing map in osu!/Songs VS updated data")
         with open(old_songs, "r") as f:
             with open("./download osu!mapSync/NewSongs.txt", "w") as otp:
@@ -255,7 +255,7 @@ while Update:
 
     asking = True
     while asking:
-        i = input("Would you like to download unsynced map now? Y/n ")
+        i = input("Would you like to download unsynced map now? (You need to log into your account before you attempt to download maps) Y/n ")
         if i == "Yes" or i == "yes" or i == "Y" or i == "y":
             print("Downloading unsynced maps now...")
             Download_Map("./download osu!mapSync/Songs.txt")
