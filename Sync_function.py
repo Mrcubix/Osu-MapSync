@@ -7,56 +7,44 @@ import re
 def Song_ID(songpath):
     BMID_list = []
     MP_list = os.listdir(songpath)
-    for ID in MP_list:
-        BMID_list.append(re.match(r"(^\d*)",ID).group(0))
-    for idx, ID in enumerate(BMID_list):
-        if ID == "  " or ID == " " or ID == "":
-            print("removed:", idx, "=", '"'+ID+'"', "from the list since it's not a valid ID" )
-            BMID_list.remove(ID)
+    [BMID_list.append(re.match(r"(^\d*)",ID).group(0)) for ID in MP_list if re.match(r"(^\d*)",ID).group(0).isdigit()]
     return BMID_list
 
 def Merge_scores(base, update):
         scDB_Base = osudb.parse_score(base)
         scDB_Update = osudb.parse_score(update)
-        for map_u in scDB_Update[2]: #  [int,int,[Maps]]
-            if map_u in scDB_Base[2]:
-                    for score_u in map_u[2]:    #   [int, int,[scores]]
-                        if score_u in scDB_Base[2][scDB_Base[2].index(map_u)][2]:
-                            continue
-                        else:
-                            scDB_Base[2][scDB_Base[2].index(map_u)][2].append(score_u)
-                            scDB_Base[2][scDB_Base[2].index(map_u)][1] += 1
-                            print("Added: "+score_u+" Type: Score")
-            else:
-                scDB_Base[2].append(map_u)
+        for i in range(0, len(scDB_Update)):
+            found = False
+            for bscores in scDB_Base[2]:
+                if scDB_Update[2][i][0] in bscores:
+                    found = True
+                    oldlen = scDB_Base[2][scDB_Base[2].index(bscores)][1]
+                    scDB_Base[2][scDB_Base[2].index(bscores)][2].extend(score for score in scDB_Update[2][i][2] if score not in scDB_Base[2][scDB_Base[2].index(bscores)][2])
+                    scDB_Base[2][scDB_Base[2].index(bscores)][1] = len(scDB_Base[2][scDB_Base[2].index(bscores)][2])
+                    inta = -(int(scDB_Base[2][scDB_Base[2].index(bscores)][1])-int(oldlen))
+                    if inta < 0:
+                        print("Added: "+str(scDB_Base[2][scDB_Base[2].index(bscores)][2][inta:][4])+" Type: Map")
+            if not found:
+                scDB_Base[2].append(scDB_Update[2][i])
                 scDB_Base[1] += 1
-                print("Added: "+map_u+" Type: Map")
-        scDB_Base[0] = scDB_Update[0]
+                print("Added: "+scDB_Update[2][i]+" Type: Map")
         return scDB_Base
 
 def Merge_collection(base, update):
-        files = [base, update]
-        obj = {}
-        added_elements = 0
-        for idx, f in enumerate(files):
-            parse = osudb.parse_collection(f)
-            obj["collection"+str(idx)] = [parse][0]
-        for idx, collection in enumerate(obj["collection1"][2]):
-            if collection in obj["collection0"][2]:
-                for hash in collection[2]:
-                    if hash in obj["collection0"][2][idx][2]:
-                        continue
-                    else:
-                        obj["collection0"][2][idx][2].append(hash)
-                        obj["collection0"][2][idx][1] += 1
-                        print("Added:",hash,"(type:Hash)","(Collection:",collection[0],")")
-            else: 
-                obj["collection0"][2].append(collection)
-                obj["collection0"][1] += 1
-                print("Added:",collection,"(type:Collection)")
-        if added_elements == 0:
-            print("no elements added")
-        return obj["collection0"]
+        CDB_Base = osudb.parse_collection(base)
+        CDB_Update = osudb.parse_collection(update)
+        for i in range(0,len(CDB_Update[2])):
+            found = False
+            for bcollection in CDB_Base[2]:
+                if CDB_Update[2][i][0] in bcollection:
+                    found = True
+                    CDB_Base[2][CDB_Base[2].index(bcollection)][2] = list(set(CDB_Base[2][CDB_Base[2].index(bcollection)][2]) | set(CDB_Update[2][i][2]))
+                    CDB_Base[2][CDB_Base[2].index(bcollection)][1] = len(CDB_Base[2][CDB_Base[2].index(bcollection)][2])
+            if not found: 
+                CDB_Base[2].append(CDB_Update[2][i])
+                CDB_Base[1] += 1
+                print("Added:",CDB_Update[2][i],"(type:Collection)")
+        return CDB_Base
 
 def Download_Map(old_songs, songpath, osupath):  
         print("importing modules...")
@@ -90,9 +78,7 @@ def Download_Map(old_songs, songpath, osupath):
         print("Comparing map in osu!/Songs VS updated data")
         with open(old_songs, "r") as f:
             with open("./download osu!mapSync/NewSongs.txt", "w") as otp:
-                for link in f.readlines():
-                    if link not in BMID_list:
-                        otp.write(link)
+                [otp.write(link) for link in f.readlines() if link not in BMID_list]
 
         os.remove(old_songs)
 
