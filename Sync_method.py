@@ -209,5 +209,3 @@ def Upload():
             prompt = False
         except:
             print("Method not available")
-
-Upload()
