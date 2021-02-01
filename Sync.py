@@ -187,9 +187,9 @@ while Update:
                 print("Extracting replays...")
                 shutil.unpack_archive("./download osu!MapSync/r.zip", os.path.abspath(osupath + "/data/r/"))
                 print("Moving DB files...")
-                shutil.copy("./new osu!.db/osu!.db", os.path.abspath(os.path.join(os.getcwd(),osuDBm)))
-                shutil.copy("./new osu!.db/scores.db", os.path.abspath(os.path.join(os.getcwd(),scoresDB)))
-                shutil.copy("./new osu!.db/collection.db", os.path.abspath(os.path.join(os.getcwd(),collectionDB)))
+                shutil.copy(os.path.abspath(__file__.split("Sync.py")[0]+"/new osu!.db/osu!.db"), os.path.abspath(os.path.join(os.getcwd(),osuDBm)))
+                shutil.copy(os.path.abspath(__file__.split("Sync.py")[0]+"/new osu!.db/scores.db"), os.path.abspath(os.path.join(os.getcwd(),scoresDB)))
+                shutil.copy(os.path.abspath(__file__.split("Sync.py")[0]+"/new osu!.db/collection.db"), os.path.abspath(os.path.join(os.getcwd(),collectionDB)))
                 asking = False
         if i == "No" or i == "N" or i == "no" or i == "n":
             print("New files are located in './new osu!.db/'")
