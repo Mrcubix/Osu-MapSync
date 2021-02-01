@@ -106,7 +106,6 @@ def IDlog(method):
                 connect = ftp.connect(NSID[0], port)
                 if connect == '220 Service ready for new user.':
                     ftp.login(NSID[1],NSID[2])
-                    ftp.quit()
                     print("connected on", NSID[0], "as", NSID[1])
                     prompt = False
                     return ftp
