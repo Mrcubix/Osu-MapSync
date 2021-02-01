@@ -138,7 +138,6 @@ def Upload_Method(method):
             path = input("Input folder's path where you want the data to be uploaded to: ")
             scp.put(os.path.abspath(__file__.split('Sync_method.py', 1)[0]+"/osu!MapSync.zip"), path+"/osu!MapSync.zip")
             scp.close()
-            prompt = False
         except:
             print("path or folder not found or OS is pepega")
     if method == "localfile":
@@ -167,7 +166,6 @@ def Update_Method(method):
             print(Join(path,"localfile",None))
             try:
                 print("Receiving files from",path)
-                print(__file__)
                 shutil.copy(os.path.abspath(path+"/osu!MapSync.zip"), os.path.abspath(__file__.split('Sync_method.py', 1)[0]+"/download osu!MapSync/osu!MapSync.zip"))
                 prompt = False
             except:

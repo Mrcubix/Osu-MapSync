@@ -11,24 +11,24 @@ def Song_ID(songpath):
     return BMID_list
 
 def Merge_scores(base, update):
-        scDB_Base = osudb.parse_score(base)
-        scDB_Update = osudb.parse_score(update)
-        for i in range(0, len(scDB_Update)):
-            found = False
-            for bscores in scDB_Base[2]:
-                if scDB_Update[2][i][0] in bscores:
-                    found = True
-                    oldlen = scDB_Base[2][scDB_Base[2].index(bscores)][1]
-                    scDB_Base[2][scDB_Base[2].index(bscores)][2].extend(score for score in scDB_Update[2][i][2] if score not in scDB_Base[2][scDB_Base[2].index(bscores)][2])
-                    scDB_Base[2][scDB_Base[2].index(bscores)][1] = len(scDB_Base[2][scDB_Base[2].index(bscores)][2])
-                    inta = -(int(scDB_Base[2][scDB_Base[2].index(bscores)][1])-int(oldlen))
-                    if inta < 0:
-                        print("Added: "+str(scDB_Base[2][scDB_Base[2].index(bscores)][2][inta:][4])+" Type: Map")
-            if not found:
-                scDB_Base[2].append(scDB_Update[2][i])
-                scDB_Base[1] += 1
-                print("Added: "+str(scDB_Update[2][i])+" Type: Map")
-        return scDB_Base
+    scDB_Base = osudb.parse_score(base)
+    scDB_Update = osudb.parse_score(update)
+    Found = False
+    for map_u in scDB_Update[2]:
+        for idx, map_b in enumerate(scDB_Base[2]):
+            Found = False
+            if map_u[0] in map_b:
+                Found = True
+                for scores_u in map_u[2]:
+                    if not scores_u in map_b[2]:
+                        scDB_Base[2][idx][2].append(scores_u)
+                        scDB_Update[2][idx][1] += 1
+                        print("Added: "+str(scores_u)+" Type: Scores")
+        if Found == False:
+            scDB_Base[2].append(map_u)
+            scDB_Base[1] += 1
+            print("Added: "+str(map_u[0])+" Type: Maps")
+    return scDB_Base
 
 def Merge_collection(base, update):
         CDB_Base = osudb.parse_collection(base)
