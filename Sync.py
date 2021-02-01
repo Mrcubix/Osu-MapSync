@@ -67,7 +67,9 @@ while Syncing:
     BMID_list = Song_ID(songpath)
     if not os.path.exists("./new osu!.db/"):
         os.makedirs("new osu!.db")
-        
+    if not os.path.exists("./osu!MapSync/"):
+        os.makedirs("osu!MapSync")
+
     print (" ")
 
     # Write all the map links in a txt file
