@@ -177,7 +177,7 @@ while Update:
             i = input("Would you like to backup your old osu! db files? (they will be located in "+os.path.abspath(osupath+"/Backup")+") (recommended) Y/n ") #send files to osu! folder
             if i == "Yes" or i == "Y" or i == "yes" or i == "y":
                 if not os.path.exists(os.path.abspath(osupath+"/Backup")):
-                    os.makedirs("Backup")
+                    os.makedirs(osupath+"/Backup")
                 shutil.copy(collectionDB, os.path.abspath(os.path.join(os.getcwd(),osupath+"/Backup/collection.db")))
                 shutil.copy(scoresDB, os.path.abspath(os.path.join(os.getcwd(),osupath+"/Backup/scores.db")))
                 shutil.copy(osuDBm, os.path.abspath(os.path.join(os.getcwd(),osupath+"/Backup/osu!.db")))
