@@ -30,15 +30,6 @@ def Merge_scores(base, update):
             print("Added: "+str(map_u[0])+" Type: Maps")
     return scDB_Base
 
-import serializer
-data = Merge_scores("./old osu!.db/Backup/sample/origin/scores.db", "./old osu!.db/Backup/sample/new score + map/scores.db")
-serializer.serialize_scoredb_data(data)
-with open("./old osu!.db/Backup/sample/new score/list_before.txt", "w") as f:
-    f.write(str(osudb.parse_score("./old osu!.db/Backup/sample/origin/scores.db")))
-with open("./old osu!.db/Backup/sample/new score/list_after.txt", "w") as f:
-    f.write(str(data))
-
-
 def Merge_collection(base, update):
         CDB_Base = osudb.parse_collection(base)
         CDB_Update = osudb.parse_collection(update)
