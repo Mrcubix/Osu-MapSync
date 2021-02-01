@@ -27,7 +27,7 @@ def Merge_scores(base, update):
             if not found:
                 scDB_Base[2].append(scDB_Update[2][i])
                 scDB_Base[1] += 1
-                print("Added: "+scDB_Update[2][i]+" Type: Map")
+                print("Added: "+str(scDB_Update[2][i])+" Type: Map")
         return scDB_Base
 
 def Merge_collection(base, update):
