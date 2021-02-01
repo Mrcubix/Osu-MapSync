@@ -13,22 +13,31 @@ def Song_ID(songpath):
 def Merge_scores(base, update):
     scDB_Base = osudb.parse_score(base)
     scDB_Update = osudb.parse_score(update)
-    Found = False
     for map_u in scDB_Update[2]:
         for idx, map_b in enumerate(scDB_Base[2]):
-            Found = False
             if map_u[0] in map_b:
-                Found = True
                 for scores_u in map_u[2]:
                     if not scores_u in map_b[2]:
                         scDB_Base[2][idx][2].append(scores_u)
-                        scDB_Update[2][idx][1] += 1
+                        scDB_Base[2][idx][1] += 1
                         print("Added: "+str(scores_u)+" Type: Scores")
-        if Found == False:
+    listmap = []
+    [listmap.append(map_b[0]) for map_b in scDB_Base[2]]
+    for map_u in scDB_Update[2]:
+        if not map_u[0] in listmap:
             scDB_Base[2].append(map_u)
             scDB_Base[1] += 1
             print("Added: "+str(map_u[0])+" Type: Maps")
     return scDB_Base
+
+import serializer
+data = Merge_scores("./old osu!.db/Backup/sample/origin/scores.db", "./old osu!.db/Backup/sample/new score + map/scores.db")
+serializer.serialize_scoredb_data(data)
+with open("./old osu!.db/Backup/sample/new score/list_before.txt", "w") as f:
+    f.write(str(osudb.parse_score("./old osu!.db/Backup/sample/origin/scores.db")))
+with open("./old osu!.db/Backup/sample/new score/list_after.txt", "w") as f:
+    f.write(str(data))
+
 
 def Merge_collection(base, update):
         CDB_Base = osudb.parse_collection(base)
