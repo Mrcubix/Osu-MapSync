@@ -106,6 +106,7 @@ def IDlog(method):
                 connect = ftp.connect(NSID[0], port)
                 if connect == '220 Service ready for new user.':
                     ftp.login(NSID[1],NSID[2])
+                    ftp.quit()
                     print("connected on", NSID[0], "as", NSID[1])
                     prompt = False
                     return ftp
@@ -123,11 +124,13 @@ def IDlog(method):
 def Upload_Method(method):
     path = "./osu!MapSync.zip"
     if method == "FTP":
+        ftp = FTP()
         ftp = IDlog("FTP")
         print(Join("osu!MapSync", "FTP", ftp))
+        ftp.delete("osu!MapSync.zip")
         print("Sending file to FTP server")
         with open(path,"rb") as f:
-            ftp.storbinary(f"STOR {path}", f)
+            print(ftp.storbinary(f"STOR {path}", f))
         print("Upload done")
         ftp.quit()
     if method == "SSH":
@@ -150,7 +153,7 @@ def Update_Method(method):
     if method == "FTP":
         ftp = IDlog("FTP")
         ftp.cwd("osu!MapSync")
-        if ftp.dir() == None:
+        if "osu!MapSync.zip" not in ftp.nlst():
             print("No synced data, exiting...")
             ftp.quit()
             exit()
@@ -206,3 +209,5 @@ def Upload():
             prompt = False
         except:
             print("Method not available")
+
+Upload()

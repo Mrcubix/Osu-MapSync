@@ -65,7 +65,9 @@ while Syncing:
     # Write all maps link to a txt file
 
     BMID_list = Song_ID(songpath)
-
+    if not os.path.exists("./new osu!.db/"):
+        os.makedirs("new osu!.db")
+        
     print (" ")
 
     # Write all the map links in a txt file
@@ -120,10 +122,13 @@ while Update:
 
     import Sync_method as Sm
     import Sync_function as Sf
+    if not os.path.exists("./download osu!MapSync/"):
+        os.makedirs("download osu!MapSync")
     Sm.Update()
     
     print("Info: Extracting content...")
-
+    if not os.path.exists("./old osu!.db/"):
+        os.makedirs("old osu!.db")
     shutil.unpack_archive("./download osu!MapSync/osu!MapSync.zip", "./download osu!MapSync/")
     shutil.copy("./download osu!MapSync/collection.db", os.path.abspath(os.path.join(os.getcwd(),"./old osu!.db/collection_update.db")))
     shutil.copy("./download osu!MapSync/scores.db", os.path.abspath(os.path.join(os.getcwd(),"./old osu!.db/scores_update.db")))
@@ -134,6 +139,8 @@ while Update:
 
     print("patching osu!.db...")
 
+    if not os.path.exists("./new osu!.db/"):
+        os.makedirs("new osu!.db")
     cmd = 'bad.exe dump "./old osu!.db/osu!_update.db" "./old osu!.db/osu!_update.csv"'
     s = os.system(cmd)
     cmd = 'bad.exe patch "./old osu!.db/osu!.db" "./old osu!.db/osu!_update.csv" "./new osu!.db/osu!.db"'
