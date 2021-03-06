@@ -69,13 +69,21 @@ def Download_Map(old_songs, songpath, osupath):
                 if i == "N" or i == "n":
                     print("exiting...")
                     exit()
-
+        promptm = True
+        while promptm:
+            i = input("Would you like to download video on all maps when possible? Y/n : ")
+            if i == "Y" or i == "y":
+                option = ""
+                promptm = False
+            if i == "N" or i == "n":
+                option = "?noVideo=1"
+                promptm = False
         BMID_list = Song_ID(songpath)
         for id in BMID_list:
             BMID_list[BMID_list.index(id)] = "https://osu.ppy.sh/beatmapsets/"+id+"\n"
 
         cj = browser_cookie3.load()
-        print("Comparing map in osu!/Songs VS updated data")
+        print("Info: Comparing map in osu!/Songs VS updated data" + "\n")
         with open(old_songs, "r") as f:
             with open("./download osu!mapSync/NewSongs.txt", "w") as otp:
                 [otp.write(link) for link in f.readlines() if link not in BMID_list]
@@ -83,17 +91,32 @@ def Download_Map(old_songs, songpath, osupath):
         os.remove(old_songs)
 
         with open("./download osu!mapSync/NewSongs.txt", "r") as f:
-            for link in f:            
-                print("Downloading", link.strip("\n"))
-                headers = {"referer": link.strip("\n")}
-                with requests.get(link.strip("\n")) as r:
+            data = [i.strip("\n") for i in f]
+            for idx, link in enumerate(data):            
+                print("Info: Downloading", link)
+                headers = {"referer": link}
+                with requests.get(link) as r:
                     t = BS(r.text, 'html.parser').title.text.split("·")[0]
-                with requests.get(link.strip("\n")+"/download", stream=True, cookies=cj, headers=headers) as r:
+                    sign = ['*', '"', '/', '\\', ':', ';', '|', '?', '<', '>']
+                    for s in sign:
+                        t = t.replace(s,"_")
+                with requests.get(link+"/download"+option, stream=True, cookies=cj, headers=headers) as r:
                     if r.status_code == 200:
                         try:
                             id = re.sub("[^0-9]", "", link)
                             with open(os.path.abspath(osupath+"/Songs/"+id+" "+t+".osz"), "wb") as otp:
                                 otp.write(r.content)
+                            print("Success: Done downloading "+t+" "+str(idx+1)+"/"+ str(len(data)) + "\n")
+                            continue
                         except:
                             print("You either aren't connected on osu!'s website or you're limited by the API, in which case you now have to wait 1h and then try again.")
-
+                    if r.status_code == 404:
+                        with requests.get(link+"/download", stream=True, cookies=cj, headers=headers) as rn:
+                            try:
+                                id = re.sub("[^0-9]", "", link)
+                                with open(os.path.abspath(osupath+"/Songs/"+id+" "+t+".osz"), "wb") as otp:
+                                    otp.write(rn.content)
+                                print("Success: Done downloading "+t+" "+str(idx+1)+"/"+ str(len(data)) + "\n")
+                                continue
+                            except:
+                                print("You either aren't connected on osu!'s website or you're limited by the API, in which case you now have to wait 1h and then try again.")
